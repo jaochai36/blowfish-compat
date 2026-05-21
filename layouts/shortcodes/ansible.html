@@ -49,50 +49,44 @@
   {{- $out -}}
 {{- end -}}
 
-{{- with try (resources.GetRemote $apiURL) -}}
-  {{- with .Err -}}
-    {{- warnf "ansible shortcode: failed to fetch remote resource from %q: %s" $apiURL $.Position -}}
-  {{- else with .Value -}}
-    {{- $resp := . | transform.Unmarshal -}}
-    {{- if eq $type "role" -}}
-      {{- with index ($resp.results | default slice) 0 -}}
-        {{- $title = print $namespace "." .name -}}
-        {{- $description = .description -}}
-        {{- $downloads = .download_count -}}
-        {{- with .summary_fields -}}
-          {{- with index (.versions | default slice) 0 -}}
-            {{- $version = .name -}}
-          {{- end -}}
-          {{- $tags = .tags -}}
+{{- with resources.GetRemote $apiURL -}}
+  {{- $resp := . | transform.Unmarshal -}}
+  {{- if eq $type "role" -}}
+    {{- with index ($resp.results | default slice) 0 -}}
+      {{- $title = print $namespace "." .name -}}
+      {{- $description = .description -}}
+      {{- $downloads = .download_count -}}
+      {{- with .summary_fields -}}
+        {{- with index (.versions | default slice) 0 -}}
+          {{- $version = .name -}}
         {{- end -}}
-        {{- $dataAvailable = true -}}
-      {{- end -}}
-    {{- else if eq $type "collection" -}}
-      {{- $title = print $namespace "." $name -}}
-      {{- $downloads = $resp.download_count -}}
-      {{- with $resp.highest_version -}}
-        {{- $version = .version -}}
-      {{- end -}}
-      {{- if $version -}}
-        {{- $versionURL := print $apiURL "versions/" $version "/" -}}
-        {{- with try (resources.GetRemote $versionURL) -}}
-          {{- with .Value -}}
-            {{- $verResp := . | transform.Unmarshal -}}
-            {{- with $verResp.metadata -}}
-              {{- $description = .description -}}
-              {{- $tags = .tags -}}
-              {{- with .license -}}
-                {{- $license = index . 0 -}}
-              {{- end -}}
-            {{- end -}}
-          {{- end -}}
-        {{- end -}}
+        {{- $tags = .tags -}}
       {{- end -}}
       {{- $dataAvailable = true -}}
     {{- end -}}
-  {{- else -}}
-    {{- warnf "ansible shortcode: unable to get remote resource from %q: %s" $apiURL $.Position -}}
+  {{- else if eq $type "collection" -}}
+    {{- $title = print $namespace "." $name -}}
+    {{- $downloads = $resp.download_count -}}
+    {{- with $resp.highest_version -}}
+      {{- $version = .version -}}
+    {{- end -}}
+    {{- if $version -}}
+      {{- $versionURL := print $apiURL "versions/" $version "/" -}}
+      {{- with resources.GetRemote $versionURL -}}
+        {{- $verResp := . | transform.Unmarshal -}}
+        {{- with $verResp.metadata -}}
+          {{- $description = .description -}}
+          {{- $tags = .tags -}}
+          {{- with .license -}}
+            {{- $license = index . 0 -}}
+          {{- end -}}
+        {{- end -}}
+      {{- end -}}
+    {{- end -}}
+    {{- $dataAvailable = true -}}
   {{- end -}}
+{{- else -}}
+  {{- warnf "ansible shortcode: unable to get remote resource from %q: %s" $apiURL $.Position -}}
 {{- end -}}
 
 {{- if $dataAvailable -}}
