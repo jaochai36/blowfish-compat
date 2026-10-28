@@ -38,7 +38,7 @@
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.0",
     "@tailwindcss/typography": "^0.5.19",
-    "chart.js": "^4.5.1",
+    "chart.js": "^4.6.1",
     "fuse.js": "~7.3.0",
     "katex": "^0.16.45",
     "lite-youtube-embed": "^0.3.4",
